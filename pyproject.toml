@@ -1,9 +1,30 @@
 [project]
 name = "strumai"
 version = "0.1.0"
-description = "Add your description here"
+description = "Demand Planning Dashboard"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.135.1",
     "uvicorn>=0.42.0",
+    "pydantic>=2.0",
+    "logfire>=0.36.0",
 ]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
