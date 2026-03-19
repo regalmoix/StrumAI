@@ -5,6 +5,7 @@ import SKUSearch from '../components/SKUSearch';
 import KPISummary from '../components/KPISummary';
 import AggregatedDemandChart from '../components/AggregatedDemandChart';
 import AlertCards from '../components/AlertCards';
+import RecentlyViewedSKUs from '../components/RecentlyViewedSKUs';
 
 export default function HomePage() {
   const [inferenceDate, setInferenceDate] = useState('');
@@ -33,6 +34,7 @@ export default function HomePage() {
 
       <main className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
         <KPISummary />
+        <RecentlyViewedSKUs />
         <AggregatedDemandChart />
         <AlertCards />
       </main>

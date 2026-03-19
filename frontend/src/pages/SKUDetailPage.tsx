@@ -9,6 +9,7 @@ import { fetchHistorical, fetchForecast, fetchPreviousYear, fetchDemandDrivers }
 import type { HistoricalRecord, ForecastRecord, DemandDriversResponse } from '../api/types';
 import DemandDriversPanel from '../components/DemandDriversPanel';
 import SKUHealthCard from '../components/SKUHealthCard';
+import { recordSKUVisit } from '../lib/recentSKUs';
 import SKUSearch from '../components/SKUSearch';
 
 interface ChartRow {
@@ -40,6 +41,10 @@ function SKUDetailContent({ itemId }: { itemId: string }) {
   const [drivers, setDrivers] = useState<DemandDriversResponse | null>(null);
   const [dividerLabel, setDividerLabel] = useState('');
   const [inferenceDate, setInferenceDate] = useState('');
+
+  useEffect(() => {
+    recordSKUVisit(itemId);
+  }, [itemId]);
 
   useEffect(() => {
     let cancelled = false;

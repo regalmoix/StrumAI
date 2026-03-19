@@ -1,18 +1,42 @@
 import { useEffect, useState } from 'react';
-import { Package, TrendingUp, BarChart3, AlertTriangle } from 'lucide-react';
+import { Package, TrendingUp, TrendingDown, BarChart3, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { fetchAggregateDemand, fetchSKUs, fetchAlerts } from '../api/client';
 
 interface KPIData {
   totalSKUs: number;
   lastWeekUnits: number;
+  prevWeekUnits: number | null;
   alertCount: number;
   avgForecastNext4: number;
+  portfolioHealthPct: number;
 }
 
 function formatNumber(val: number) {
   if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
   if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
   return val.toFixed(0);
+}
+
+function trendPct(current: number, previous: number | null): number | null {
+  if (previous == null || previous === 0) return null;
+  return ((current - previous) / previous) * 100;
+}
+
+interface TrendBadgeProps {
+  pct: number | null;
+}
+
+function TrendBadge({ pct }: TrendBadgeProps) {
+  if (pct == null) return null;
+  const isUp = pct >= 0;
+  const Icon = isUp ? TrendingUp : TrendingDown;
+  const color = isUp ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50';
+  return (
+    <span data-testid="kpi-trend" className={`inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-md ${color}`}>
+      <Icon className="w-3 h-3" />
+      {isUp ? '+' : ''}{pct.toFixed(1)}%
+    </span>
+  );
 }
 
 export default function KPISummary() {
@@ -24,12 +48,17 @@ export default function KPISummary() {
         const hist = agg.data.filter((d) => d.source === 'historical');
         const fc = agg.data.filter((d) => d.source === 'forecast');
         const lastWeek = hist[hist.length - 1]?.value ?? 0;
+        const prevWeek = hist.length >= 2 ? hist[hist.length - 2]?.value ?? null : null;
         const avgFc = fc.slice(0, 4).reduce((s, d) => s + d.value, 0) / Math.max(fc.slice(0, 4).length, 1);
+        const healthyCount = skus.total - alerts.alerts.length;
+        const healthPct = skus.total > 0 ? (healthyCount / skus.total) * 100 : 100;
         setKpi({
           totalSKUs: skus.total,
           lastWeekUnits: lastWeek,
+          prevWeekUnits: prevWeek,
           alertCount: alerts.alerts.length,
           avgForecastNext4: avgFc,
+          portfolioHealthPct: healthPct,
         });
       },
     );
@@ -37,13 +66,15 @@ export default function KPISummary() {
 
   if (!kpi) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
+        {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="bg-white rounded-xl border border-slate-200/60 p-5 animate-pulse h-[104px]" />
         ))}
       </div>
     );
   }
+
+  const weekTrend = trendPct(kpi.lastWeekUnits, kpi.prevWeekUnits);
 
   const cards = [
     {
@@ -53,6 +84,7 @@ export default function KPISummary() {
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-600',
       valueColor: 'text-slate-900',
+      trend: null as number | null,
     },
     {
       label: 'Last Week Units',
@@ -61,6 +93,7 @@ export default function KPISummary() {
       iconBg: 'bg-emerald-50',
       iconColor: 'text-emerald-600',
       valueColor: 'text-slate-900',
+      trend: weekTrend,
     },
     {
       label: 'Avg Forecast (4w)',
@@ -69,6 +102,7 @@ export default function KPISummary() {
       iconBg: 'bg-violet-50',
       iconColor: 'text-violet-600',
       valueColor: 'text-slate-900',
+      trend: null as number | null,
     },
     {
       label: 'Accuracy Alerts',
@@ -77,11 +111,21 @@ export default function KPISummary() {
       iconBg: 'bg-amber-50',
       iconColor: 'text-amber-600',
       valueColor: kpi.alertCount > 0 ? 'text-amber-600' : 'text-slate-900',
+      trend: null as number | null,
+    },
+    {
+      label: 'Portfolio Health',
+      value: `${kpi.portfolioHealthPct.toFixed(0)}%`,
+      icon: ShieldCheck,
+      iconBg: kpi.portfolioHealthPct >= 80 ? 'bg-emerald-50' : kpi.portfolioHealthPct >= 50 ? 'bg-amber-50' : 'bg-red-50',
+      iconColor: kpi.portfolioHealthPct >= 80 ? 'text-emerald-600' : kpi.portfolioHealthPct >= 50 ? 'text-amber-600' : 'text-red-600',
+      valueColor: 'text-slate-900',
+      trend: null as number | null,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+    <div data-testid="kpi-summary" className="grid grid-cols-2 lg:grid-cols-5 gap-5">
       {cards.map((c) => (
         <div
           key={c.label}
@@ -94,7 +138,10 @@ export default function KPISummary() {
             </div>
             <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{c.label}</span>
           </div>
-          <div className={`text-2xl font-semibold ${c.valueColor} tabular-nums`}>{c.value}</div>
+          <div className="flex items-center gap-2">
+            <div className={`text-2xl font-semibold ${c.valueColor} tabular-nums`}>{c.value}</div>
+            <TrendBadge pct={c.trend} />
+          </div>
         </div>
       ))}
     </div>
