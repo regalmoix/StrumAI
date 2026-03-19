@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+node_modules/
+.git/
+.idea/
+.cursor/
+.vscode/
+*.db
+*.sqlite3
+playwright-report/
+test-results/
+*.png
+.env
+.env.*

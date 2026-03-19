@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      STRUM_ENVIRONMENT: production
+      STRUM_LOG_LEVEL: INFO
+      STRUM_DB_PATH: /app/data/strumai.db
+      STRUM_FRONTEND_DIST: /app/frontend/dist
+      STRUM_CORS_ORIGINS: "[]"
+    volumes:
+      - ./data:/app/data:ro
+    restart: unless-stopped
+
+  dev-backend:
+    profiles: ["dev"]
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      STRUM_ENVIRONMENT: development
+      STRUM_LOG_LEVEL: DEBUG
+      STRUM_DB_PATH: /app/data/strumai.db
+      STRUM_CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173"]'
+    volumes:
+      - ./data:/app/data:ro
+      - ./backend:/app/backend
+    command: uv run uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
