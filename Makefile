@@ -14,7 +14,7 @@ frontend:
 	cd frontend && npm run dev -- --host 0.0.0.0
 
 load-data:
-	uv run python scripts/load_data.py
+	uv run python -m scripts.load_data
 
 test:
 	uv run pytest
