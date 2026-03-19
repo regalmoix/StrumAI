@@ -8,6 +8,7 @@ import {
   fetchAggregateDemand,
   fetchAlerts,
   fetchPreviousYear,
+  fetchSKUMetrics,
 } from '../api/client';
 
 vi.mock('axios', () => {
@@ -89,6 +90,18 @@ describe('fetchAlerts', () => {
     const result = await fetchAlerts();
     expect(mockedAxios.get).toHaveBeenCalledWith('/alerts');
     expect(result.alerts).toEqual([]);
+  });
+});
+
+describe('fetchSKUMetrics', () => {
+  it('calls correct endpoint', async () => {
+    mockedAxios.get.mockResolvedValue({
+      data: { item_id: 'X', mape: 15.2, bias: 3.1, mae: 120, rmse: 145, weeks_compared: 4, health: 'healthy' },
+    });
+    const result = await fetchSKUMetrics('X');
+    expect(mockedAxios.get).toHaveBeenCalledWith('/skus/X/metrics');
+    expect(result.health).toBe('healthy');
+    expect(result.mape).toBe(15.2);
   });
 });
 

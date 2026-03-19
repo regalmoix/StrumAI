@@ -10,6 +10,9 @@ vi.mock('../api/client', () => ({
   fetchForecast: vi.fn().mockResolvedValue({ item_id: 'TEST', inference_date: '2025-04-20', forecasts: [] }),
   fetchPreviousYear: vi.fn().mockResolvedValue([]),
   fetchDemandDrivers: vi.fn().mockResolvedValue({ item_id: 'TEST', historical: [], projected: [] }),
+  fetchSKUMetrics: vi.fn().mockResolvedValue({
+    item_id: 'TEST', mape: null, bias: null, mae: null, rmse: null, weeks_compared: 0, health: 'unknown',
+  }),
 }));
 
 import HomePage from '../pages/HomePage';

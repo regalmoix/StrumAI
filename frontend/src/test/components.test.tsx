@@ -7,16 +7,19 @@ vi.mock('../api/client', () => ({
   fetchSKUs: vi.fn(),
   fetchAggregateDemand: vi.fn(),
   fetchAlerts: vi.fn(),
+  fetchSKUMetrics: vi.fn(),
 }));
 
-import { fetchSKUs, fetchAggregateDemand, fetchAlerts } from '../api/client';
+import { fetchSKUs, fetchAggregateDemand, fetchAlerts, fetchSKUMetrics } from '../api/client';
 import SKUSearch from '../components/SKUSearch';
 import AlertCards from '../components/AlertCards';
 import KPISummary from '../components/KPISummary';
+import SKUHealthCard from '../components/SKUHealthCard';
 
 const mockedFetchSKUs = vi.mocked(fetchSKUs);
 const mockedFetchAlerts = vi.mocked(fetchAlerts);
 const mockedFetchAggregateDemand = vi.mocked(fetchAggregateDemand);
+const mockedFetchSKUMetrics = vi.mocked(fetchSKUMetrics);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -121,7 +124,7 @@ describe('AlertCards', () => {
 });
 
 describe('KPISummary', () => {
-  it('renders KPI cards with data', async () => {
+  function setupKPIMocks(alertCount = 1, totalSKUs = 166) {
     mockedFetchAggregateDemand.mockResolvedValue({
       inference_date: '2025-04-20',
       data: [
@@ -130,18 +133,109 @@ describe('KPISummary', () => {
         { timestamp: '2025-04-27', value: 85000, source: 'forecast' as const, p10: 70000, p90: 100000 },
       ],
     });
-    mockedFetchSKUs.mockResolvedValue({ skus: [], total: 166 });
-    mockedFetchAlerts.mockResolvedValue({ alerts: [{ item_id: 'X', mape: 30, bias: 10, direction: 'over' as const, weeks_compared: 2 }] });
+    mockedFetchSKUs.mockResolvedValue({ skus: [], total: totalSKUs });
+    const alerts = Array.from({ length: alertCount }, (_, i) => ({
+      item_id: `X_${i}`, mape: 30, bias: 10, direction: 'over' as const, weeks_compared: 2,
+    }));
+    mockedFetchAlerts.mockResolvedValue({ alerts });
+  }
 
-    render(
-      <MemoryRouter>
-        <KPISummary />
-      </MemoryRouter>,
-    );
+  it('renders KPI cards with data', async () => {
+    setupKPIMocks();
+    render(<MemoryRouter><KPISummary /></MemoryRouter>);
 
     await waitFor(() => {
       expect(screen.getByText('166')).toBeInTheDocument();
       expect(screen.getByText('1')).toBeInTheDocument();
+    });
+  });
+
+  it('shows week-over-week trend badge', async () => {
+    setupKPIMocks();
+    render(<MemoryRouter><KPISummary /></MemoryRouter>);
+
+    await waitFor(() => {
+      const trendBadge = screen.getByTestId('kpi-trend');
+      expect(trendBadge).toBeInTheDocument();
+      expect(trendBadge.textContent).toContain('+6.7%');
+    });
+  });
+
+  it('shows portfolio health percentage', async () => {
+    setupKPIMocks(1, 10);
+    render(<MemoryRouter><KPISummary /></MemoryRouter>);
+
+    await waitFor(() => {
+      expect(screen.getByText('90%')).toBeInTheDocument();
+      expect(screen.getByText('Portfolio Health')).toBeInTheDocument();
+    });
+  });
+
+  it('shows 100% portfolio health when no alerts', async () => {
+    setupKPIMocks(0, 5);
+    render(<MemoryRouter><KPISummary /></MemoryRouter>);
+
+    await waitFor(() => {
+      expect(screen.getByText('100%')).toBeInTheDocument();
+    });
+  });
+});
+
+describe('SKUHealthCard', () => {
+  it('renders health card with metrics', async () => {
+    mockedFetchSKUMetrics.mockResolvedValue({
+      item_id: 'SKU_001',
+      mape: 15.2,
+      bias: 3.1,
+      mae: 120,
+      rmse: 145,
+      weeks_compared: 4,
+      health: 'healthy',
+    });
+
+    render(<SKUHealthCard itemId="SKU_001" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Forecast Health')).toBeInTheDocument();
+      expect(screen.getByText('Healthy')).toBeInTheDocument();
+      expect(screen.getByText('15.2%')).toBeInTheDocument();
+      expect(screen.getByText('+3.1%')).toBeInTheDocument();
+    });
+  });
+
+  it('shows unavailable message when no data', async () => {
+    mockedFetchSKUMetrics.mockResolvedValue({
+      item_id: 'NEW_SKU',
+      mape: null,
+      bias: null,
+      mae: null,
+      rmse: null,
+      weeks_compared: 0,
+      health: 'unknown',
+    });
+
+    render(<SKUHealthCard itemId="NEW_SKU" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Forecast accuracy metrics not available')).toBeInTheDocument();
+    });
+  });
+
+  it('shows critical badge for high MAPE', async () => {
+    mockedFetchSKUMetrics.mockResolvedValue({
+      item_id: 'BAD_SKU',
+      mape: 75.0,
+      bias: 60.0,
+      mae: 500,
+      rmse: 600,
+      weeks_compared: 3,
+      health: 'critical',
+    });
+
+    render(<SKUHealthCard itemId="BAD_SKU" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Critical')).toBeInTheDocument();
     });
   });
 });
