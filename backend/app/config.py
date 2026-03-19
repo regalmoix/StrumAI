@@ -1,6 +1,9 @@
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
+
+_CODESPACE_NAME = os.environ.get("CODESPACE_NAME")
 
 
 class Settings(BaseSettings):
@@ -11,6 +14,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "INFO"
     frontend_dist: Path = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+    codespace_name: str | None = _CODESPACE_NAME
 
 
 settings = Settings()
