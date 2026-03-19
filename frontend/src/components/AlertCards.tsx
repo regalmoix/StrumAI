@@ -55,6 +55,7 @@ export default function AlertCards() {
           return (
             <button
               key={alert.item_id}
+              data-testid={`alert-card-${alert.item_id}`}
               onClick={() => navigate(`/sku/${alert.item_id}`)}
               className="bg-white rounded-xl border border-slate-200/60 p-4 text-left
                          hover:border-slate-300 hover:shadow-md transition-all group cursor-pointer"

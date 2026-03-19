@@ -21,6 +21,8 @@ node_modules/
 .npm
 dist/
 build/
+playwright-report/
+test-results/
 .eslintcache
 .stylelintcache
 # Next.js (if applicable)

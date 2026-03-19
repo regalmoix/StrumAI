@@ -1,10 +1,20 @@
+import { useEffect, useState } from 'react';
 import { BarChart3 } from 'lucide-react';
+import { fetchAggregateDemand } from '../api/client';
 import SKUSearch from '../components/SKUSearch';
 import KPISummary from '../components/KPISummary';
 import AggregatedDemandChart from '../components/AggregatedDemandChart';
 import AlertCards from '../components/AlertCards';
 
 export default function HomePage() {
+  const [inferenceDate, setInferenceDate] = useState('');
+
+  useEffect(() => {
+    fetchAggregateDemand()
+      .then((response) => setInferenceDate(response.inference_date))
+      .catch(() => setInferenceDate(''));
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200/60 sticky top-0 z-40 shadow-sm">
@@ -28,8 +38,12 @@ export default function HomePage() {
       </main>
 
       <footer className="border-t border-slate-200/60 bg-white mt-8">
-        <div className="max-w-[1400px] mx-auto px-6 py-4 text-xs text-slate-400">
-          Demand Planning Dashboard &middot; Data as of 2025-04-20
+        <div
+          data-testid="home-inference-date"
+          className="max-w-[1400px] mx-auto px-6 py-4 text-xs text-slate-400"
+        >
+          Demand Planning Dashboard
+          {inferenceDate ? ` | Data as of ${inferenceDate}` : ''}
         </div>
       </footer>
     </div>

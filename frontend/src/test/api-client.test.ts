@@ -75,9 +75,10 @@ describe('fetchDemandDrivers', () => {
 
 describe('fetchAggregateDemand', () => {
   it('calls correct endpoint', async () => {
-    mockedAxios.get.mockResolvedValue({ data: { data: [] } });
+    mockedAxios.get.mockResolvedValue({ data: { inference_date: '2025-04-20', data: [] } });
     const result = await fetchAggregateDemand();
     expect(mockedAxios.get).toHaveBeenCalledWith('/aggregate/demand');
+    expect(result.inference_date).toBe('2025-04-20');
     expect(result.data).toEqual([]);
   });
 });

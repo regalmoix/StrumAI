@@ -55,8 +55,8 @@ def api_previous_year(item_id: str, timestamps: str = Query(...)) -> list[dict[s
 
 @router.get("/aggregate/demand", response_model=AggregateResponse)
 def api_aggregate_demand() -> AggregateResponse:
-    data = get_aggregate_demand()
-    return AggregateResponse(data=data)  # type: ignore[arg-type]
+    result = get_aggregate_demand()
+    return AggregateResponse(**result)  # type: ignore[arg-type]
 
 
 @router.get("/alerts", response_model=AlertsResponse)

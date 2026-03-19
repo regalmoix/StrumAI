@@ -112,9 +112,12 @@ class TestAggregateEndpoint:
     def test_aggregate_demand(self, client: TestClient) -> None:
         resp = client.get("/api/aggregate/demand")
         assert resp.status_code == 200
-        data = resp.json()["data"]
+        body = resp.json()
+        data = body["data"]
+        assert body["inference_date"] == "2025-04-20"
         assert len(data) > 0
         sources = {d["source"] for d in data}
+        assert "historical" in sources
         assert "forecast" in sources
 
     def test_aggregate_has_confidence_bands(self, client: TestClient) -> None:
@@ -123,6 +126,14 @@ class TestAggregateEndpoint:
         assert len(fc_points) > 0
         assert fc_points[0]["p10"] is not None
         assert fc_points[0]["p90"] is not None
+
+    def test_aggregate_uses_exact_window_sizes(self, client: TestClient) -> None:
+        resp = client.get("/api/aggregate/demand")
+        data = resp.json()["data"]
+        hist_points = [d for d in data if d["source"] == "historical"]
+        fc_points = [d for d in data if d["source"] == "forecast"]
+        assert len(hist_points) == 13
+        assert len(fc_points) == 39
 
 
 class TestAlertsEndpoint:

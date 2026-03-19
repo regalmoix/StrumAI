@@ -75,6 +75,7 @@ export interface DemandDriversResponse {
 }
 
 export interface AggregateResponse {
+  inference_date: string;
   data: AggregatePoint[];
 }
 

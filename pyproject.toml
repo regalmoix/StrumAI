@@ -29,6 +29,9 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 
+[tool.uv]
+default-groups = ["dev"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
@@ -36,5 +39,6 @@ pythonpath = ["."]
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
+    "mypy>=1.18.2",
     "pytest>=9.0.2",
 ]

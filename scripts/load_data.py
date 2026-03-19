@@ -1,12 +1,9 @@
 import csv
 import json
 import sqlite3
-import sys
 from pathlib import Path
 
 import logfire
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from backend.app.database import DB_PATH
 from backend.app.database import SCHEMA_SQL
@@ -76,6 +73,7 @@ def load_forecasts(conn: sqlite3.Connection) -> None:
                 ),
             )
 
+            run_id: int | None
             if cursor.lastrowid and cursor.rowcount > 0:
                 run_id = cursor.lastrowid
             else:
@@ -83,7 +81,7 @@ def load_forecasts(conn: sqlite3.Connection) -> None:
                     "SELECT id FROM forecast_runs WHERE item_id = ? AND inference_date = ?",
                     (item_id, row["inference_date"]),
                 ).fetchone()
-                run_id = result[0] if result else None
+                run_id = int(result[0]) if result else None
 
             if run_id is None:
                 continue

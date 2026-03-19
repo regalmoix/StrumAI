@@ -71,6 +71,7 @@ class AggregatePoint(BaseModel):
 
 
 class AggregateResponse(BaseModel):
+    inference_date: date
     data: list[AggregatePoint]
 
 

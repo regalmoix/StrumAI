@@ -31,8 +31,7 @@ function formatNumber(val: number) {
   return val.toFixed(0);
 }
 
-export default function SKUDetailPage() {
-  const { itemId } = useParams<{ itemId: string }>();
+function SKUDetailContent({ itemId }: { itemId: string }) {
   const [chartData, setChartData] = useState<ChartRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,15 +41,17 @@ export default function SKUDetailPage() {
   const [inferenceDate, setInferenceDate] = useState('');
 
   useEffect(() => {
-    if (!itemId) return;
-    setLoading(true);
-    setError(null);
+    let cancelled = false;
 
-    Promise.all([
-      fetchHistorical(itemId, 13),
-      fetchForecast(itemId),
-    ])
-      .then(async ([hist, fc]) => {
+    async function loadDemandData() {
+      try {
+        const [hist, fc] = await Promise.all([
+          fetchHistorical(itemId, 13),
+          fetchForecast(itemId),
+        ]);
+
+        if (cancelled) return;
+
         setInferenceDate(fc.inference_date);
 
         const allTimestamps = [
@@ -65,6 +66,8 @@ export default function SKUDetailPage() {
         } catch {
           /* previous year data may not be available */
         }
+
+        if (cancelled) return;
 
         const lastHist = hist.data[hist.data.length - 1];
         if (lastHist) setDividerLabel(formatDate(lastHist.timestamp));
@@ -90,11 +93,18 @@ export default function SKUDetailPage() {
 
         setChartData(rows);
         setLoading(false);
-      })
-      .catch(() => {
+      } catch {
+        if (cancelled) return;
         setError('Failed to load data for this SKU');
         setLoading(false);
-      });
+      }
+    }
+
+    void loadDemandData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [itemId]);
 
   useEffect(() => {
@@ -131,6 +141,7 @@ export default function SKUDetailPage() {
           <div className="flex items-center gap-3">
             <SKUSearch />
             <button
+              data-testid="demand-drivers-toggle"
               onClick={() => setPanelOpen(!panelOpen)}
               title={panelOpen ? 'Close demand drivers' : 'Open demand drivers'}
               className={`w-9 h-9 rounded-lg border flex items-center justify-center transition-colors ${
@@ -153,7 +164,7 @@ export default function SKUDetailPage() {
         ) : (
           <div className="flex gap-6">
             <div className={`transition-all duration-300 ${panelOpen ? 'w-[60%]' : 'w-full'}`}>
-              <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6">
+              <div data-testid="sku-demand-chart" className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-5">
                   <div>
                     <h2 className="text-base font-semibold text-slate-900">Demand Forecast</h2>
@@ -219,7 +230,7 @@ export default function SKUDetailPage() {
             </div>
 
             {panelOpen && (
-              <div className="w-[40%] transition-all duration-300">
+              <div data-testid="demand-drivers-panel" className="w-[40%] transition-all duration-300">
                 <DemandDriversPanel drivers={drivers} />
               </div>
             )}
@@ -228,4 +239,14 @@ export default function SKUDetailPage() {
       </main>
     </div>
   );
+}
+
+export default function SKUDetailPage() {
+  const { itemId } = useParams<{ itemId: string }>();
+
+  if (!itemId) {
+    return null;
+  }
+
+  return <SKUDetailContent key={itemId} itemId={itemId} />;
 }

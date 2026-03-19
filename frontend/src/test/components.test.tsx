@@ -123,6 +123,7 @@ describe('AlertCards', () => {
 describe('KPISummary', () => {
   it('renders KPI cards with data', async () => {
     mockedFetchAggregateDemand.mockResolvedValue({
+      inference_date: '2025-04-20',
       data: [
         { timestamp: '2025-04-13', value: 75000, source: 'historical' as const, p10: null, p90: null },
         { timestamp: '2025-04-20', value: 80000, source: 'historical' as const, p10: null, p90: null },

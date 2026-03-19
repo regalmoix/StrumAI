@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import date
+from typing import cast
 
 from backend.app.database import get_connection
 
@@ -97,16 +98,20 @@ def get_demand_drivers(item_id: str) -> dict[str, object]:
         conn.close()
 
 
-def get_aggregate_demand() -> list[dict[str, object]]:
+def get_aggregate_demand() -> dict[str, object]:
     conn = get_connection()
     try:
         max_date = get_max_inference_date(conn)
 
         historical = conn.execute(
+            "SELECT timestamp, value FROM ("
             "SELECT timestamp, SUM(units_sold) as value "
             "FROM historical_actuals "
-            "WHERE timestamp > date(?, '-91 days') "
-            "GROUP BY timestamp ORDER BY timestamp",
+            "WHERE timestamp <= ? "
+            "GROUP BY timestamp "
+            "ORDER BY timestamp DESC "
+            "LIMIT 13"
+            ") ORDER BY timestamp",
             (max_date,),
         ).fetchall()
 
@@ -137,7 +142,7 @@ def get_aggregate_demand() -> list[dict[str, object]]:
                     "p90": r["p90"],
                 }
             )
-        return result
+        return {"inference_date": max_date, "data": result}
     finally:
         conn.close()
 
@@ -204,7 +209,7 @@ def get_alerts() -> list[dict[str, object]]:
                     }
                 )
 
-        alerts.sort(key=lambda x: x["mape"], reverse=True)  # type: ignore[arg-type]
+        alerts.sort(key=lambda x: cast(float, x["mape"]), reverse=True)
         return alerts
     finally:
         conn.close()

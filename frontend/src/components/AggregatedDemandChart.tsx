@@ -83,7 +83,7 @@ export default function AggregatedDemandChart() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6">
+    <div data-testid="aggregate-demand-chart" className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-base font-semibold text-slate-900">Aggregated Demand</h2>

@@ -47,6 +47,17 @@ npm run dev
 
 Open http://localhost:5173
 
+### 5. Run Quality Checks
+
+```bash
+uv run pytest
+uv run ruff check .
+cd frontend
+npm run lint
+npm run test
+npm run test:e2e
+```
+
 ## Database Schema
 
 ### Tables
