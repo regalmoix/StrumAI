@@ -34,14 +34,19 @@ A full-stack demand planning dashboard for retail supply chain teams — monitor
 
 ## Quick Start
 
-### Option A — GitHub Codespaces (zero setup)
+### Option A — GitHub Codespaces
 
-Click **Code → Codespaces → Create codespace** on any branch. The environment:
+Click **Code → Codespaces → Create codespace** on any branch. The environment automatically:
 1. Installs all Python + Node dependencies
 2. Seeds the SQLite database from the committed CSVs
-3. Starts the backend (port 8000) and frontend (port 5173) automatically
 
-The frontend tab opens in your browser. No commands needed.
+Once the Codespace is ready, open the terminal and run:
+
+```bash
+make dev
+```
+
+This starts both servers. Codespaces will forward port 5173 and open the app in your browser.
 
 ### Option B — Docker
 
