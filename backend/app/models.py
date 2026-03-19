@@ -87,6 +87,16 @@ class AlertsResponse(BaseModel):
     alerts: list[AlertItem]
 
 
+class SKUMetricsResponse(BaseModel):
+    item_id: str
+    mape: float | None = None
+    bias: float | None = None
+    mae: float | None = None
+    rmse: float | None = None
+    weeks_compared: int
+    health: str
+
+
 class SKUListResponse(BaseModel):
     skus: list[str]
     total: int

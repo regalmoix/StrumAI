@@ -163,6 +163,52 @@ class TestAlertsEndpoint:
         assert mapes == sorted(mapes, reverse=True)
 
 
+class TestSKUMetricsEndpoint:
+    def test_metrics_returns_valid_response(self, client: TestClient) -> None:
+        resp = client.get("/api/skus/SKU_001/metrics")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["item_id"] == "SKU_001"
+        assert data["weeks_compared"] > 0
+        assert data["health"] in ("healthy", "watch", "critical")
+
+    def test_metrics_has_all_fields(self, client: TestClient) -> None:
+        resp = client.get("/api/skus/SKU_001/metrics")
+        data = resp.json()
+        for field in ("mape", "bias", "mae", "rmse", "weeks_compared", "health"):
+            assert field in data
+
+    def test_metrics_mape_is_positive(self, client: TestClient) -> None:
+        resp = client.get("/api/skus/SKU_001/metrics")
+        data = resp.json()
+        assert data["mape"] >= 0
+
+    def test_metrics_health_classification(self, client: TestClient) -> None:
+        resp = client.get("/api/skus/SKU_001/metrics")
+        data = resp.json()
+        mape = data["mape"]
+        if mape <= 20:
+            assert data["health"] == "healthy"
+        elif mape <= 50:
+            assert data["health"] == "watch"
+        else:
+            assert data["health"] == "critical"
+
+    def test_metrics_nonexistent_sku(self, client: TestClient) -> None:
+        resp = client.get("/api/skus/NONEXISTENT/metrics")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["weeks_compared"] == 0
+        assert data["health"] == "unknown"
+
+    def test_metrics_both_skus_have_data(self, client: TestClient) -> None:
+        for sku in ("SKU_001", "SKU_002"):
+            resp = client.get(f"/api/skus/{sku}/metrics")
+            data = resp.json()
+            assert data["item_id"] == sku
+            assert data["weeks_compared"] > 0
+
+
 class TestPreviousYearEndpoint:
     def test_previous_year(self, client: TestClient) -> None:
         resp = client.get(

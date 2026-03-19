@@ -26,7 +26,7 @@ def test_db(tmp_path: Path) -> Generator[Path, None, None]:
     conn.execute("INSERT INTO items (item_id) VALUES (?)", ("SKU_001",))
     conn.execute("INSERT INTO items (item_id) VALUES (?)", ("SKU_002",))
 
-    for week_offset in range(16):
+    for week_offset in range(20):
         ts = HIST_START + timedelta(weeks=week_offset)
         for sku, base_units, price in [("SKU_001", 100, 19.99), ("SKU_002", 50, 9.99)]:
             conn.execute(

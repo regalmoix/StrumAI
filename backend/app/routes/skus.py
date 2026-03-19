@@ -10,12 +10,14 @@ from backend.app.models import DemandDriversResponse
 from backend.app.models import ForecastResponse
 from backend.app.models import HistoricalResponse
 from backend.app.models import SKUListResponse
+from backend.app.models import SKUMetricsResponse
 from backend.app.services.demand import get_aggregate_demand
 from backend.app.services.demand import get_alerts
 from backend.app.services.demand import get_demand_drivers
 from backend.app.services.demand import get_forecast
 from backend.app.services.demand import get_historical
 from backend.app.services.demand import get_previous_year_actuals
+from backend.app.services.demand import get_sku_metrics
 from backend.app.services.demand import list_skus
 
 router = APIRouter(prefix="/api")
@@ -45,6 +47,12 @@ def api_forecast(item_id: str) -> ForecastResponse:
 def api_demand_drivers(item_id: str) -> DemandDriversResponse:
     result = get_demand_drivers(item_id)
     return DemandDriversResponse(**result)  # type: ignore[arg-type]
+
+
+@router.get("/skus/{item_id}/metrics", response_model=SKUMetricsResponse)
+def api_sku_metrics(item_id: str) -> SKUMetricsResponse:
+    result = get_sku_metrics(item_id)
+    return SKUMetricsResponse(**result)  # type: ignore[arg-type]
 
 
 @router.get("/skus/{item_id}/previous-year")

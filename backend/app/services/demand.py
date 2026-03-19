@@ -215,6 +215,76 @@ def get_alerts() -> list[dict[str, object]]:
         conn.close()
 
 
+def get_sku_metrics(item_id: str) -> dict[str, object]:
+    conn = get_connection()
+    try:
+        max_date = get_max_inference_date(conn)
+        earlier_date = conn.execute(
+            "SELECT DISTINCT inference_date FROM forecast_runs "
+            "WHERE inference_date <= date(?, '-28 days') ORDER BY inference_date DESC LIMIT 1",
+            (max_date,),
+        ).fetchone()
+
+        if not earlier_date:
+            return {"item_id": item_id, "weeks_compared": 0, "health": "unknown"}
+
+        ref_date = earlier_date[0]
+
+        rows = conn.execute(
+            "SELECT fv.mean as fc_mean, ha.units_sold as actual "
+            "FROM forecast_runs fr "
+            "JOIN forecast_values fv ON fv.forecast_run_id = fr.id "
+            "JOIN historical_actuals ha ON ha.item_id = fr.item_id AND ha.timestamp = fv.timestamp "
+            "WHERE fr.item_id = ? AND fr.inference_date = ? "
+            "ORDER BY fv.timestamp",
+            (item_id, ref_date),
+        ).fetchall()
+
+        valid_pairs: list[tuple[float, float]] = []
+        for r in rows:
+            if r["actual"] > 0:
+                valid_pairs.append((r["fc_mean"], r["actual"]))
+
+        if not valid_pairs:
+            return {"item_id": item_id, "weeks_compared": 0, "health": "unknown"}
+
+        n = len(valid_pairs)
+        total_ape = 0.0
+        total_bias = 0.0
+        total_ae = 0.0
+        total_se = 0.0
+        for fc, actual in valid_pairs:
+            error = fc - actual
+            total_ape += abs(error) / actual
+            total_bias += error / actual
+            total_ae += abs(error)
+            total_se += error * error
+
+        mape = round((total_ape / n) * 100, 1)
+        bias = round((total_bias / n) * 100, 1)
+        mae = round(total_ae / n, 1)
+        rmse = round((total_se / n) ** 0.5, 1)
+
+        if mape <= 20:
+            health = "healthy"
+        elif mape <= 50:
+            health = "watch"
+        else:
+            health = "critical"
+
+        return {
+            "item_id": item_id,
+            "mape": mape,
+            "bias": bias,
+            "mae": mae,
+            "rmse": rmse,
+            "weeks_compared": n,
+            "health": health,
+        }
+    finally:
+        conn.close()
+
+
 def get_previous_year_actuals(item_id: str, timestamps: list[date]) -> list[dict[str, object]]:
     conn = get_connection()
     try:
