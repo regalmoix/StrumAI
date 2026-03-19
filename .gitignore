@@ -69,7 +69,10 @@ pinecone/
 data/raw/
 data/processed/
 *.jsonl
+# CSV files are ignored globally except the seeded app data
 *.csv
+!data/aggregated_data.csv
+!data/forecast_data.csv
 *.parquet
 *.pickle
 *.npy
