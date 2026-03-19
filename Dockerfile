@@ -17,6 +17,8 @@ COPY backend/ backend/
 COPY scripts/ scripts/
 COPY data/ data/
 
+RUN uv run python -m scripts.load_data
+
 COPY --from=frontend-build /build/dist frontend/dist
 
 ENV STRUM_ENVIRONMENT=production \
