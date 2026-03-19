@@ -1,0 +1,88 @@
+# --- Documentation ---
+*.md
+!README.md
+
+# --- Python (uv, mypy, ruff) ---
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+# uv specific
+.uv/
+# Type checking & Linting caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.pyre_configuration
+
+# --- React / Node.js ---
+node_modules/
+.npm
+dist/
+build/
+.eslintcache
+.stylelintcache
+# Next.js (if applicable)
+.next/
+out/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Databases & Vector Stores ---
+*.sqlite3
+*.db
+*.sql
+*.dump
+# Vector DBs
+faiss_index/
+chroma_db/
+pinecone/
+.milvus/
+
+# --- IDEs & Editors ---
+.idea/
+.cursor/
+.cursorrules
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+
+# --- LLM & AI Specifics ---
+# Model weights & Large Binaries
+*.bin
+*.pt
+*.pth
+*.onnx
+*.gguf
+*.ckpt
+*.safetensors
+# Local data/datasets
+data/raw/
+data/processed/
+*.jsonl
+*.csv
+*.parquet
+*.pickle
+*.npy
+
+# --- Environment & Secrets ---
+.env
+.env.*
+.openai_api_key
+.anthropic_api_key
+*.pem
+*.key
+*.cert
+
+# --- OS Specific ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
