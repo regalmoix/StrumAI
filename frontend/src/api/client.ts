@@ -7,6 +7,7 @@ import type {
   HistoricalResponse,
   PreviousYearRecord,
   SKUListResponse,
+  SKUMetricsResponse,
 } from './types';
 
 const api = axios.create({ baseURL: '/api' });
@@ -39,6 +40,11 @@ export async function fetchAggregateDemand(): Promise<AggregateResponse> {
 
 export async function fetchAlerts(): Promise<AlertsResponse> {
   const { data } = await api.get<AlertsResponse>('/alerts');
+  return data;
+}
+
+export async function fetchSKUMetrics(itemId: string): Promise<SKUMetricsResponse> {
+  const { data } = await api.get<SKUMetricsResponse>(`/skus/${itemId}/metrics`);
   return data;
 }
 

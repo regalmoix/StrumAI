@@ -83,6 +83,16 @@ export interface AlertsResponse {
   alerts: AlertItem[];
 }
 
+export interface SKUMetricsResponse {
+  item_id: string;
+  mape: number | null;
+  bias: number | null;
+  mae: number | null;
+  rmse: number | null;
+  weeks_compared: number;
+  health: 'healthy' | 'watch' | 'critical' | 'unknown';
+}
+
 export interface PreviousYearRecord {
   timestamp: string;
   units_sold: number;

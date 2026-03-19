@@ -8,6 +8,7 @@ import { ArrowLeft, PanelRightOpen, PanelRightClose, BarChart3 } from 'lucide-re
 import { fetchHistorical, fetchForecast, fetchPreviousYear, fetchDemandDrivers } from '../api/client';
 import type { HistoricalRecord, ForecastRecord, DemandDriversResponse } from '../api/types';
 import DemandDriversPanel from '../components/DemandDriversPanel';
+import SKUHealthCard from '../components/SKUHealthCard';
 import SKUSearch from '../components/SKUSearch';
 
 interface ChartRow {
@@ -226,6 +227,10 @@ function SKUDetailContent({ itemId }: { itemId: string }) {
                     </ComposedChart>
                   </ResponsiveContainer>
                 )}
+              </div>
+
+              <div className="mt-6">
+                <SKUHealthCard itemId={itemId} />
               </div>
             </div>
 
