@@ -23,6 +23,7 @@ dist/
 build/
 playwright-report/
 test-results/
+*.png
 .eslintcache
 .stylelintcache
 # Next.js (if applicable)

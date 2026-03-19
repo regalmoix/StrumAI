@@ -1,14 +1,13 @@
 import csv
 import json
+import logging
 import sqlite3
 from pathlib import Path
 
-import logfire
-
-from backend.app.database import DB_PATH
+from backend.app.config import settings
 from backend.app.database import SCHEMA_SQL
 
-logger = logfire.Logfire()
+logger = logging.getLogger("strumai.loader")
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 AGGREGATED_CSV = DATA_DIR / "aggregated_data.csv"
@@ -43,7 +42,7 @@ def load_aggregated(conn: sqlite3.Connection) -> None:
         rows,
     )
     conn.commit()
-    logger.info("Loaded {count} historical rows for {items} items", count=len(rows), items=len(items))
+    logger.info("Loaded %d historical rows for %d items", len(rows), len(items))
 
 
 def load_forecasts(conn: sqlite3.Connection) -> None:
@@ -137,23 +136,21 @@ def load_forecasts(conn: sqlite3.Connection) -> None:
 
     conn.commit()
     logger.info(
-        "Loaded {runs} forecast runs, {values} forecast values, {drivers} projected drivers",
-        runs=run_count,
-        values=value_count,
-        drivers=driver_count,
+        "Loaded %d forecast runs, %d forecast values, %d projected drivers", run_count, value_count, driver_count
     )
 
 
 def main() -> None:
-    logfire.configure(send_to_logfire=False)
-    logger.info("Starting data load into {path}", path=str(DB_PATH))
+    logging.basicConfig(level=logging.INFO, format="%(levelname)-8s %(name)s — %(message)s")
+    db_path = settings.db_path
+    logger.info("Starting data load into %s", db_path)
 
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if DB_PATH.exists():
-        DB_PATH.unlink()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    if db_path.exists():
+        db_path.unlink()
         logger.info("Removed existing database")
 
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(db_path))
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
 

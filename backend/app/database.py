@@ -1,15 +1,13 @@
+import logging
 import sqlite3
-from pathlib import Path
 
-import logfire
+from backend.app.config import settings
 
-DB_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "strumai.db"
-
-logger = logfire.Logfire()
+logger = logging.getLogger("strumai.database")
 
 
 def get_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(settings.db_path))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
@@ -78,6 +76,6 @@ def init_db() -> None:
     try:
         conn.executescript(SCHEMA_SQL)
         conn.commit()
-        logger.info("Database schema initialized")
+        logger.info("Database schema initialized at %s", settings.db_path)
     finally:
         conn.close()
