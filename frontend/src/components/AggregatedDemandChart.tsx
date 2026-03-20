@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { fetchAggregateDemand } from '../api/client';
 import type { AggregatePoint } from '../api/types';
+import InfoTooltip from './InfoTooltip';
 
 interface ChartRow {
   timestamp: string;
@@ -98,6 +99,7 @@ export default function AggregatedDemandChart() {
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-2.5 bg-violet-100 rounded" /> P10–P90
+            <InfoTooltip text="80% confidence interval. The model estimates there is an 80% chance actual demand will fall within this shaded band. Wider bands indicate more uncertainty." />
           </span>
         </div>
       </div>

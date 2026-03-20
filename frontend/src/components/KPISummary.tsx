@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Package, TrendingUp, TrendingDown, BarChart3, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { fetchAggregateDemand, fetchSKUs, fetchAlerts } from '../api/client';
+import InfoTooltip from './InfoTooltip';
 
 interface KPIData {
   totalSKUs: number;
@@ -10,6 +11,14 @@ interface KPIData {
   avgForecastNext4: number;
   portfolioHealthPct: number;
 }
+
+const KPI_TOOLTIPS: Record<string, string> = {
+  'Total SKUs': 'Number of unique products (Stock Keeping Units) being tracked in this portfolio.',
+  'Last Week Units': 'Total units sold across all SKUs in the most recent completed week. The badge shows the week-over-week change.',
+  'Avg Forecast (4w)': 'Average forecasted weekly units across all SKUs for the next 4 weeks, based on the latest AI model inference.',
+  'Accuracy Alerts': 'SKUs where the AI forecast error (MAPE) exceeds 20%. These need human review — the model is struggling to predict them accurately.',
+  'Portfolio Health': 'Percentage of SKUs with acceptable forecast accuracy (MAPE < 20%). Higher is better. Below 80% indicates widespread forecast quality issues.',
+};
 
 function formatNumber(val: number) {
   if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
@@ -133,10 +142,13 @@ export default function KPISummary() {
                      hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className={`w-9 h-9 ${c.iconBg} rounded-lg flex items-center justify-center`}>
+            <div className={`w-9 h-9 ${c.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
               <c.icon className={`w-[18px] h-[18px] ${c.iconColor}`} />
             </div>
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{c.label}</span>
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              {c.label}
+              {KPI_TOOLTIPS[c.label] && <InfoTooltip text={KPI_TOOLTIPS[c.label]} />}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <div className={`text-2xl font-semibold ${c.valueColor} tabular-nums`}>{c.value}</div>

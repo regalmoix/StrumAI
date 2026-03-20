@@ -16,12 +16,14 @@ A full-stack demand planning dashboard for retail supply chain teams — monitor
 - Forecast accuracy alerts — SKUs with MAPE > 20% surfaced prominently
 - Recently viewed SKUs strip for quick navigation (localStorage-backed)
 - SKU search with autocomplete
+- Contextual tooltips on every KPI explaining what each metric means
 
 **SKU Detail Workbench**
 - 52-week demand chart: 13w historical + 39w forecast + previous-year overlay
 - P10/P50/P90 confidence bands on the forecast
 - Forecast Health card — MAPE, bias, MAE, RMSE with color-coded health classification
 - Demand drivers side panel (toggle): avg unit price and in-stock rate, historical + projected
+- Inline tooltips on all forecast accuracy metrics (MAPE, Bias, MAE, RMSE, health classification, confidence bands)
 
 **Backend API**
 - REST API built on FastAPI with full Pydantic validation

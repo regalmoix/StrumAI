@@ -9,6 +9,7 @@ import { fetchHistorical, fetchForecast, fetchPreviousYear, fetchDemandDrivers }
 import type { HistoricalRecord, ForecastRecord, DemandDriversResponse } from '../api/types';
 import DemandDriversPanel from '../components/DemandDriversPanel';
 import SKUHealthCard from '../components/SKUHealthCard';
+import InfoTooltip from '../components/InfoTooltip';
 import { recordSKUVisit } from '../lib/recentSKUs';
 import SKUSearch from '../components/SKUSearch';
 
@@ -185,9 +186,11 @@ function SKUDetailContent({ itemId }: { itemId: string }) {
                     </span>
                     <span className="flex items-center gap-1.5">
                       <span className="w-3 h-0.5 bg-amber-400 rounded" /> Prev Year
+                      <InfoTooltip text="Actual units sold in the same weeks one year ago. Useful for spotting seasonality — if sales spiked last year at this time, the forecast should reflect that." />
                     </span>
                     <span className="flex items-center gap-1.5">
                       <span className="w-3 h-2.5 bg-violet-100 rounded" /> P10–P90
+                      <InfoTooltip text="80% confidence interval. The model estimates there is an 80% chance actual demand will fall within this shaded band. Wider bands indicate more uncertainty." />
                     </span>
                   </div>
                 </div>

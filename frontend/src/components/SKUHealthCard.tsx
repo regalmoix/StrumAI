@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Activity, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
 import { fetchSKUMetrics } from '../api/client';
 import type { SKUMetricsResponse } from '../api/types';
+import InfoTooltip from './InfoTooltip';
 
 const HEALTH_CONFIG = {
   healthy: { label: 'Healthy', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', Icon: CheckCircle },
@@ -47,10 +48,27 @@ export default function SKUHealthCard({ itemId }: { itemId: string }) {
   const { label, color, bg, border, Icon } = HEALTH_CONFIG[metrics.health];
 
   const metricItems = [
-    { key: 'MAPE', value: metrics.mape != null ? `${metrics.mape}%` : '—' },
-    { key: 'Bias', value: metrics.bias != null ? `${metrics.bias > 0 ? '+' : ''}${metrics.bias}%` : '—', icon: metrics.bias != null && metrics.bias > 0 ? TrendingUp : TrendingDown },
-    { key: 'MAE', value: metrics.mae != null ? metrics.mae.toLocaleString() : '—' },
-    { key: 'RMSE', value: metrics.rmse != null ? metrics.rmse.toLocaleString() : '—' },
+    {
+      key: 'MAPE',
+      value: metrics.mape != null ? `${metrics.mape}%` : '—',
+      tooltip: 'Mean Absolute Percentage Error — average forecast error as a % of actual sales. <20% is healthy, 20–40% needs watching, >40% is critical.',
+    },
+    {
+      key: 'Bias',
+      value: metrics.bias != null ? `${metrics.bias > 0 ? '+' : ''}${metrics.bias}%` : '—',
+      icon: metrics.bias != null && metrics.bias > 0 ? TrendingUp : TrendingDown,
+      tooltip: 'Systematic over- or under-forecasting. Positive = model forecasts too high (overestimates demand). Negative = model forecasts too low.',
+    },
+    {
+      key: 'MAE',
+      value: metrics.mae != null ? metrics.mae.toLocaleString() : '—',
+      tooltip: 'Mean Absolute Error — average forecast error in raw units. Unlike MAPE, this is not relative to actual sales volume.',
+    },
+    {
+      key: 'RMSE',
+      value: metrics.rmse != null ? metrics.rmse.toLocaleString() : '—',
+      tooltip: 'Root Mean Square Error — like MAE but penalises large single-week misses more heavily. High RMSE vs MAE signals occasional big spikes of error.',
+    },
   ];
 
   return (
@@ -58,18 +76,28 @@ export default function SKUHealthCard({ itemId }: { itemId: string }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-slate-400" />
-          <h3 className="text-sm font-semibold text-slate-900">Forecast Health</h3>
+          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-1">
+            Forecast Health
+            <InfoTooltip text="How accurately the AI model has predicted this SKU's sales compared to what actually sold. Computed by comparing past forecasts to subsequent actuals." />
+          </h3>
         </div>
         <div className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${bg} ${border} border ${color}`}>
           <Icon className="w-3.5 h-3.5" />
           {label}
+          <InfoTooltip
+            text={`Healthy: MAPE < 20% · Watch: 20–40% · Critical: > 40%\nCurrent classification: ${label}`}
+            className="ml-0.5"
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-4 gap-3">
         {metricItems.map((m) => (
           <div key={m.key} className="bg-slate-50/80 rounded-lg px-3 py-2.5">
-            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">{m.key}</p>
+            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium flex items-center gap-1">
+              {m.key}
+              <InfoTooltip text={m.tooltip} />
+            </p>
             <p className="text-sm font-semibold text-slate-800 mt-0.5">{m.value}</p>
           </div>
         ))}
